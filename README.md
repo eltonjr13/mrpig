@@ -1,6 +1,6 @@
 # LoL Coach Live (base v1)
 
-Base inicial de um SaaS de coaching para League of Legends com:
+Projeto Open Source usando como base de estudos usando ajuda do codex
 - pre-game analysis
 - live contextual tracking
 - post-game review
