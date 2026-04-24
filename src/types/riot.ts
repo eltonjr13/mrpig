@@ -20,8 +20,8 @@ export interface RiotAccountDto {
 }
 
 export interface RiotSummonerDto {
-  id: string;
-  accountId: string;
+  id?: string;
+  accountId?: string;
   puuid: string;
   profileIconId: number;
   revisionDate: number;
@@ -33,7 +33,7 @@ export interface RiotLeagueEntryDto {
   queueType: string;
   tier: string;
   rank: string;
-  summonerId: string;
+  summonerId?: string;
   puuid: string;
   leaguePoints: number;
   wins: number;

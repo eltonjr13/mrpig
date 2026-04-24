@@ -11,8 +11,11 @@ interface UseDashboardDataParams {
 }
 
 export function useDashboardData({ gameName, tagLine }: UseDashboardDataParams) {
+  const hasSummonerIdentity = Boolean(gameName?.trim() && tagLine?.trim());
+
   return useQuery({
     queryKey: queryKeys.dashboard(gameName, tagLine),
+    enabled: hasSummonerIdentity,
     queryFn: () =>
       fetchJson<DashboardData>(
         `/api/dashboard?gameName=${encodeURIComponent(gameName ?? "")}&tagLine=${encodeURIComponent(tagLine ?? "")}`,

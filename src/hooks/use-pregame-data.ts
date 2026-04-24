@@ -6,21 +6,25 @@ import type { PregameData } from "@/types/app";
 import { fetchJson } from "@/utils/fetch-json";
 
 interface UsePregameDataParams {
+  gameName?: string;
+  tagLine?: string;
   champion?: string;
   enemyChampion?: string;
   lane?: string;
 }
 
 export function usePregameData({
+  gameName,
+  tagLine,
   champion,
   enemyChampion,
   lane,
 }: UsePregameDataParams = {}) {
   return useQuery({
-    queryKey: queryKeys.pregame(champion, enemyChampion, lane),
+    queryKey: queryKeys.pregame(gameName, tagLine, champion, enemyChampion, lane),
     queryFn: () =>
       fetchJson<PregameData>(
-        `/api/pregame?champion=${encodeURIComponent(champion ?? "")}&enemyChampion=${encodeURIComponent(enemyChampion ?? "")}&lane=${encodeURIComponent(lane ?? "")}`,
+        `/api/pregame?gameName=${encodeURIComponent(gameName ?? "")}&tagLine=${encodeURIComponent(tagLine ?? "")}&champion=${encodeURIComponent(champion ?? "")}&enemyChampion=${encodeURIComponent(enemyChampion ?? "")}&lane=${encodeURIComponent(lane ?? "")}`,
       ),
   });
 }

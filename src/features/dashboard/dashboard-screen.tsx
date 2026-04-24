@@ -11,6 +11,7 @@ import {
   MatchCard,
   StatCard,
   SummonerSearchForm,
+  WarningBanner,
 } from "@/components";
 import { useDashboardData } from "@/hooks";
 
@@ -20,8 +21,12 @@ interface DashboardScreenProps {
 }
 
 export function DashboardScreen({ gameName, tagLine }: DashboardScreenProps) {
+  const hasSummonerIdentity = Boolean(gameName?.trim() && tagLine?.trim());
   const { data, isPending } = useDashboardData({ gameName, tagLine });
   const topChampion = useMemo(() => data?.championPool[0], [data?.championPool]);
+  const navigationQuery = data
+    ? `?gameName=${encodeURIComponent(data.profile.gameName)}&tagLine=${encodeURIComponent(data.profile.tagLine)}`
+    : "";
 
   return (
     <AppShell
@@ -31,6 +36,13 @@ export function DashboardScreen({ gameName, tagLine }: DashboardScreenProps) {
     >
       <section className="space-y-6">
         <SummonerSearchForm defaultGameName={gameName} defaultTagLine={tagLine} />
+
+        {!hasSummonerIdentity ? (
+          <WarningBanner
+            title="Preencha Game Name e Tag"
+            description="Use seu Riot ID completo (ex.: jogador#BR1) para tentar carregar dados reais."
+          />
+        ) : null}
 
         {isPending ? <LoadingState label="Carregando dashboard..." /> : null}
 
@@ -43,6 +55,17 @@ export function DashboardScreen({ gameName, tagLine }: DashboardScreenProps) {
 
         {data ? (
           <>
+            {data.sessionStatus !== "riot_connected" ? (
+              <WarningBanner
+                title="Dados em fallback/mock"
+                description={
+                  data.fallbackReason
+                    ? `Riot retornou fallback: ${data.fallbackReason}`
+                    : "Nao foi possivel carregar dados reais da Riot neste teste. Verifique Riot ID e sua RIOT_API_KEY ativa."
+                }
+              />
+            ) : null}
+
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard
                 label="Perfil"
@@ -101,19 +124,19 @@ export function DashboardScreen({ gameName, tagLine }: DashboardScreenProps) {
 
             <div className="grid gap-3 sm:grid-cols-3">
               <Link
-                href="/pregame"
+                href={`/pregame${navigationQuery}`}
                 className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-200 transition hover:border-zinc-700"
               >
                 Pre-game: matchup, risco de lane e builds
               </Link>
               <Link
-                href="/live"
+                href={`/live${navigationQuery}`}
                 className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-200 transition hover:border-zinc-700"
               >
                 Live: contexto da partida e alertas macro
               </Link>
               <Link
-                href="/postgame"
+                href={`/postgame${navigationQuery}`}
                 className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4 text-sm text-zinc-200 transition hover:border-zinc-700"
               >
                 Post-game: revisao de execucao e proximo plano

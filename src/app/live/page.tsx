@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AppShell,
   BuildOptionCard,
@@ -12,8 +14,16 @@ import {
 import { useLiveData, usePregameData } from "@/hooks";
 
 export default function LivePage() {
-  const liveQuery = useLiveData();
-  const pregameQuery = usePregameData();
+  const searchParams = useSearchParams();
+  const gameName = searchParams.get("gameName") ?? undefined;
+  const tagLine = searchParams.get("tagLine") ?? undefined;
+  const sharedParams = useMemo(
+    () => ({ gameName, tagLine }),
+    [gameName, tagLine],
+  );
+
+  const liveQuery = useLiveData(sharedParams);
+  const pregameQuery = usePregameData(sharedParams);
 
   const liveData = liveQuery.data;
   const pregameData = pregameQuery.data;
@@ -22,13 +32,24 @@ export default function LivePage() {
     <AppShell
       title="Live"
       subtitle="Acompanhamento contextual da partida em andamento."
-      sessionStatus="mock_mode"
+      sessionStatus={liveData?.sessionStatus ?? pregameData?.sessionStatus ?? "mock_mode"}
     >
       <section className="space-y-6">
         <WarningBanner
           title="Assistente contextual, nao prescritivo"
           description="A interface oferece leitura de estado, risco e opcoes. Nao fornece comandos de acao imediata."
         />
+
+        {liveData?.sessionStatus === "riot_fallback" ? (
+          <WarningBanner
+            title="Live em fallback parcial"
+            description={
+              liveData.fallbackReason
+                ? `Pregame da Riot indisponivel: ${liveData.fallbackReason}`
+                : "Pregame da Riot indisponivel para enriquecer esta leitura."
+            }
+          />
+        ) : null}
 
         {liveQuery.isPending ? (
           <LoadingState label="Lendo estado da partida..." />

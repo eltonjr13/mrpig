@@ -5,10 +5,22 @@ import { queryKeys } from "@/lib/react-query/query-keys";
 import type { PostGameData } from "@/types/app";
 import { fetchJson } from "@/utils/fetch-json";
 
-export function usePostgameData(matchId?: string) {
+interface UsePostgameDataParams {
+  gameName?: string;
+  tagLine?: string;
+  matchId?: string;
+}
+
+export function usePostgameData({
+  gameName,
+  tagLine,
+  matchId,
+}: UsePostgameDataParams = {}) {
   return useQuery({
-    queryKey: queryKeys.postgame(matchId),
+    queryKey: queryKeys.postgame(gameName, tagLine, matchId),
     queryFn: () =>
-      fetchJson<PostGameData>(`/api/postgame?matchId=${encodeURIComponent(matchId ?? "")}`),
+      fetchJson<PostGameData>(
+        `/api/postgame?gameName=${encodeURIComponent(gameName ?? "")}&tagLine=${encodeURIComponent(tagLine ?? "")}&matchId=${encodeURIComponent(matchId ?? "")}`,
+      ),
   });
 }

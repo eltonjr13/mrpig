@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Activity, BarChart3, Compass, Home, ShieldCheck } from "lucide-react";
 import { cn } from "@/utils/cn";
 
@@ -14,6 +14,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const gameName = searchParams.get("gameName");
+  const tagLine = searchParams.get("tagLine");
+  const identityQuery =
+    gameName && tagLine
+      ? `?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
+      : "";
 
   return (
     <aside className="w-full border-b border-zinc-800 bg-zinc-950 px-4 py-4 lg:min-h-screen lg:w-64 lg:border-b-0 lg:border-r">
@@ -28,7 +35,7 @@ export function Sidebar() {
           return (
             <Link
               key={href}
-              href={href}
+              href={`${href}${identityQuery}`}
               className={cn(
                 "flex items-center gap-2 rounded-lg border px-3 py-2 text-sm transition-colors",
                 isActive

@@ -3,10 +3,18 @@ import { buildLiveAnalysis } from "@/services/analysis";
 import { getLiveClientState } from "@/services/live";
 import type { LiveData } from "@/types/app";
 
-export async function getLiveData(): Promise<LiveData> {
+interface GetLiveDataParams {
+  gameName?: string;
+  tagLine?: string;
+}
+
+export async function getLiveData({
+  gameName,
+  tagLine,
+}: GetLiveDataParams = {}): Promise<LiveData> {
   const [liveState, pregameData] = await Promise.all([
     getLiveClientState(),
-    getPregameData({}),
+    getPregameData({ gameName, tagLine }),
   ]);
 
   return {
@@ -15,5 +23,7 @@ export async function getLiveData(): Promise<LiveData> {
       liveState,
       pregameAnalysis: pregameData.analysis,
     }),
+    sessionStatus: pregameData.sessionStatus,
+    fallbackReason: pregameData.fallbackReason,
   };
 }

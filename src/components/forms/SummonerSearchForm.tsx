@@ -21,8 +21,13 @@ export function SummonerSearchForm({
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const game = gameName.trim() || "CoachPlayer";
-    const tag = tagLine.trim() || "BR1";
+    const game = gameName.trim();
+    const tag = tagLine.trim();
+
+    if (!game || !tag) {
+      return;
+    }
+
     router.push(
       `/dashboard?gameName=${encodeURIComponent(game)}&tagLine=${encodeURIComponent(tag)}`,
     );
@@ -38,6 +43,7 @@ export function SummonerSearchForm({
         value={gameName}
         onChange={(event) => setGameName(event.target.value)}
         placeholder="Game Name"
+        required
         className="h-11 rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none ring-cyan-500 transition focus:ring-2"
       />
 
@@ -49,11 +55,13 @@ export function SummonerSearchForm({
         value={tagLine}
         onChange={(event) => setTagLine(event.target.value)}
         placeholder="Tag"
+        required
         className="h-11 rounded-md border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 outline-none ring-cyan-500 transition focus:ring-2"
       />
 
       <button
         type="submit"
+        disabled={!gameName.trim() || !tagLine.trim()}
         className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-cyan-500 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-cyan-400"
       >
         <Search className="h-4 w-4" />

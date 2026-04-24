@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AppShell,
   EmptyState,
@@ -10,19 +12,38 @@ import {
 import { usePostgameData } from "@/hooks";
 
 export default function PostgamePage() {
-  const { data, isPending } = usePostgameData();
+  const searchParams = useSearchParams();
+  const gameName = searchParams.get("gameName") ?? undefined;
+  const tagLine = searchParams.get("tagLine") ?? undefined;
+  const matchId = searchParams.get("matchId") ?? undefined;
+  const queryParams = useMemo(
+    () => ({ gameName, tagLine, matchId }),
+    [gameName, tagLine, matchId],
+  );
+  const { data, isPending } = usePostgameData(queryParams);
 
   return (
     <AppShell
       title="Post-game"
       subtitle="Revisao da partida, comparacao com plano inicial e melhoria para o proximo jogo."
-      sessionStatus="mock_mode"
+      sessionStatus={data?.sessionStatus ?? "mock_mode"}
     >
       <section className="space-y-6">
         <WarningBanner
           title="Revisao orientada por coaching"
           description="A analise foca em padroes de decisao e consistencia de plano, nao em automacao de jogadas."
         />
+
+        {data?.sessionStatus === "riot_fallback" ? (
+          <WarningBanner
+            title="Postgame em fallback"
+            description={
+              data.fallbackReason
+                ? `Riot indisponivel para revisao desta partida: ${data.fallbackReason}`
+                : "Riot indisponivel para revisao desta partida."
+            }
+          />
+        ) : null}
 
         {isPending ? <LoadingState label="Montando revisao pos-jogo..." /> : null}
 

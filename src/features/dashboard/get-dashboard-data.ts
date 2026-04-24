@@ -2,6 +2,7 @@ import { RiotBaseClient } from "@/lib/api-clients/riot-base-client";
 import { mockDashboardData } from "@/features/mock-data/lol-mocks";
 import { getDashboardDataFromRiot } from "@/services/riot";
 import type { DashboardData } from "@/types/app";
+import { toErrorMessage } from "@/utils/safe-error";
 
 interface GetDashboardDataParams {
   gameName?: string;
@@ -22,10 +23,8 @@ export async function getDashboardData({
     return await getDashboardDataFromRiot({
       gameName,
       tagLine,
-      regionalRoute: "americas",
-      platformRoute: "br1",
     });
-  } catch {
+  } catch (error) {
     return {
       ...mockDashboardData,
       profile: {
@@ -34,6 +33,7 @@ export async function getDashboardData({
         tagLine,
       },
       sessionStatus: "riot_fallback",
+      fallbackReason: toErrorMessage(error),
     };
   }
 }

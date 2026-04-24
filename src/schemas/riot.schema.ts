@@ -7,8 +7,8 @@ export const riotAccountSchema = z.object({
 });
 
 export const riotSummonerSchema = z.object({
-  id: z.string(),
-  accountId: z.string(),
+  id: z.string().optional(),
+  accountId: z.string().optional(),
   puuid: z.string(),
   profileIconId: z.number(),
   revisionDate: z.number(),
@@ -20,7 +20,7 @@ export const riotLeagueEntrySchema = z.object({
   queueType: z.string(),
   tier: z.string(),
   rank: z.string(),
-  summonerId: z.string(),
+  summonerId: z.string().optional(),
   puuid: z.string(),
   leaguePoints: z.number(),
   wins: z.number(),

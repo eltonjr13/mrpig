@@ -13,17 +13,23 @@ import { mockAllyComp, mockEnemyComp } from "@/features/mock-data";
 import { usePregameData } from "@/hooks";
 
 interface PregameScreenProps {
+  gameName?: string;
+  tagLine?: string;
   champion?: string;
   enemyChampion?: string;
   lane?: string;
 }
 
 export function PregameScreen({
+  gameName,
+  tagLine,
   champion,
   enemyChampion,
   lane,
 }: PregameScreenProps) {
   const { data, isPending } = usePregameData({
+    gameName,
+    tagLine,
     champion,
     enemyChampion,
     lane,
@@ -33,13 +39,24 @@ export function PregameScreen({
     <AppShell
       title="Pre-game"
       subtitle="Analise de matchup, risco de lane e opcoes de build situacionais."
-      sessionStatus="mock_mode"
+      sessionStatus={data?.sessionStatus ?? "mock_mode"}
     >
       <section className="space-y-6">
         <WarningBanner
           title="Coaching contextual"
           description="As recomendacoes sao de contexto e risco. A ferramenta nao emite comandos de execucao imediata."
         />
+
+        {data?.sessionStatus === "riot_fallback" ? (
+          <WarningBanner
+            title="Pregame em fallback"
+            description={
+              data.fallbackReason
+                ? `Nao foi possivel usar Riot em tempo real: ${data.fallbackReason}`
+                : "Nao foi possivel usar Riot em tempo real para este pregame."
+            }
+          />
+        ) : null}
 
         {isPending || !data ? (
           <LoadingState label="Gerando leitura pre-game..." />
@@ -66,8 +83,8 @@ export function PregameScreen({
             </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
-              <TeamCompCard title="Composicao aliada" champions={mockAllyComp} />
-              <TeamCompCard title="Composicao inimiga" champions={mockEnemyComp} />
+              <TeamCompCard title="Composicao aliada" champions={data.allyComp ?? mockAllyComp} />
+              <TeamCompCard title="Composicao inimiga" champions={data.enemyComp ?? mockEnemyComp} />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

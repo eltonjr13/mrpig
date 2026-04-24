@@ -1,20 +1,22 @@
 import { RiotBaseClient } from "@/lib/api-clients/riot-base-client";
 import type { DashboardData } from "@/types/app";
 import type {
+  RiotMatchDto,
   RiotPlatformRoute,
   RiotRegionalRoute,
-  RiotMatchDto,
 } from "@/types/riot";
-import { getAccountByRiotId } from "@/services/riot/riot-account-service";
-import { getLeagueEntriesBySummonerId } from "@/services/riot/riot-league-service";
+import {
+  getLeagueEntriesByPuuid,
+  getLeagueEntriesBySummonerId,
+} from "@/services/riot/riot-league-service";
 import { getMatchById, getMatchIdsByPuuid } from "@/services/riot/riot-match-service";
+import { resolveRiotIdentity } from "@/services/riot/riot-player-service";
 import {
   calculateOverallWinRate,
   normalizeChampionPool,
   normalizePlayerProfile,
   normalizeRecentMatches,
 } from "@/services/riot/riot-normalizers";
-import { getSummonerByPuuid } from "@/services/riot/riot-summoner-service";
 
 export interface RiotDashboardParams {
   gameName: string;
@@ -26,32 +28,47 @@ export interface RiotDashboardParams {
 export async function getDashboardDataFromRiot({
   gameName,
   tagLine,
-  regionalRoute = "americas",
-  platformRoute = "br1",
+  regionalRoute,
+  platformRoute,
 }: RiotDashboardParams): Promise<DashboardData> {
   const client = new RiotBaseClient();
 
-  const account = await getAccountByRiotId(client, gameName, tagLine, regionalRoute);
-  const summoner = await getSummonerByPuuid(client, account.puuid, platformRoute);
-  const rankEntries = await getLeagueEntriesBySummonerId(client, summoner.id, platformRoute);
+  const resolvedIdentity = await resolveRiotIdentity(client, {
+    gameName,
+    tagLine,
+    regionalRoute,
+    platformRoute,
+  });
 
-  const matchIds = await getMatchIdsByPuuid(client, account.puuid, regionalRoute, {
+  const rankEntries = resolvedIdentity.summoner.id
+    ? await getLeagueEntriesBySummonerId(
+        client,
+        resolvedIdentity.summoner.id,
+        resolvedIdentity.platformRoute,
+      )
+    : await getLeagueEntriesByPuuid(
+        client,
+        resolvedIdentity.summoner.puuid,
+        resolvedIdentity.platformRoute,
+      );
+
+  const matchIds = await getMatchIdsByPuuid(client, resolvedIdentity.account.puuid, resolvedIdentity.regionalRoute, {
     start: 0,
     count: 8,
   });
 
   const matchResults = await Promise.allSettled(
-    matchIds.map((matchId) => getMatchById(client, matchId, regionalRoute)),
+    matchIds.map((matchId) => getMatchById(client, matchId, resolvedIdentity.regionalRoute)),
   );
   const matches = matchResults
     .filter((result): result is PromiseFulfilledResult<RiotMatchDto> => result.status === "fulfilled")
     .map((result) => result.value);
 
-  const recentMatches = normalizeRecentMatches(matches, account.puuid);
-  const championPool = normalizeChampionPool(matches, account.puuid);
+  const recentMatches = normalizeRecentMatches(matches, resolvedIdentity.account.puuid);
+  const championPool = normalizeChampionPool(matches, resolvedIdentity.account.puuid);
 
   return {
-    profile: normalizePlayerProfile(account, summoner, rankEntries),
+    profile: normalizePlayerProfile(resolvedIdentity.account, resolvedIdentity.summoner, rankEntries),
     rankEntries,
     recentMatches,
     championPool,

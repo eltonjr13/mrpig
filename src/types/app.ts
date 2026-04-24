@@ -39,6 +39,7 @@ export interface DashboardData {
   championPool: ChampionUsage[];
   sessionStatus: SessionStatus;
   overallWinRate: number;
+  fallbackReason?: string;
 }
 
 export interface PregameData {
@@ -47,15 +48,23 @@ export interface PregameData {
   lane: string;
   assumedEnemyJungle: string;
   analysis: PregameAnalysis;
+  allyComp?: string[];
+  enemyComp?: string[];
+  sessionStatus?: SessionStatus;
+  fallbackReason?: string;
 }
 
 export interface LiveData {
   liveState: NormalizedLiveState;
   liveAnalysis: LiveAnalysis;
+  sessionStatus?: SessionStatus;
+  fallbackReason?: string;
 }
 
 export interface PostGameData {
   matchId: string;
   championName: string;
   report: PostGameCoachReport;
+  sessionStatus?: SessionStatus;
+  fallbackReason?: string;
 }
